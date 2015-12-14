@@ -29,10 +29,10 @@ class Sulphite(object):
         # Allow customised metric path
         self.process_log        = kwargs.get(
             'process_log',
-            '%(process_name)s_%(group_name)s.%(event_name)s')
+            '{process_name}_{group_name}.{event_name}')
         self.process_state      = kwargs.get(
             'process_state',
-            '%(process_name)s_%(group_name)s.%(from_state)s.%(event_name)s')
+            '{process_name}_{group_name}.{from_state}.{event_name}')
 
         #sys.stderr.write( PP.pformat( self.__dict__ ) )
         #sys.stderr.flush()
@@ -67,21 +67,21 @@ class Sulphite(object):
 
                 ### stdout/stderr capturing
                 if re.match( 'PROCESS_LOG', event_name ):
-                    event = self.process_log % {
-                        'group_name': group_name,
-                        'process_name': process_name,
-                        'event_name': event_name.lower(),
-                    }
+                    event = self.process_log.format(
+                        group_name=group_name,
+                        process_name=process_name,
+                        event_name=event_name.lower(),
+                    )
                     self._send_to_graphite( event )
 
                 ### state change
                 elif re.match( 'PROCESS_STATE', event_name ):
-                    event = self.process_state % {
-                        'group_name': group_name,
-                        'process_name': process_name,
-                        'event_name': event_name.lower(),
-                        'from_state': event_data.get('from_state', 'unknown').lower(),
-                    }
+                    event = self.process_state.format(
+                        group_name=group_name,
+                        process_name=process_name,
+                        event_name=event_name.lower(),
+                        from_state=event_data.get('from_state', 'unknown').lower(),
+                    )
                     self._send_to_graphite( event )
 
                 ### ignore IPC for now
