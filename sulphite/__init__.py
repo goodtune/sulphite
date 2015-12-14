@@ -67,7 +67,7 @@ class Sulphite(object):
 
                 ### stdout/stderr capturing
                 if re.match( 'PROCESS_LOG', event_name ):
-                    event = self.metric % {
+                    event = self.process_log % {
                         'group_name': group_name,
                         'process_name': process_name,
                         'event_name': event_name.lower(),
@@ -76,7 +76,7 @@ class Sulphite(object):
 
                 ### state change
                 elif re.match( 'PROCESS_STATE', event_name ):
-                    event = self.metric % {
+                    event = self.process_state % {
                         'group_name': group_name,
                         'process_name': process_name,
                         'event_name': event_name.lower(),
