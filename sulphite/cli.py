@@ -23,6 +23,10 @@ def build_parser():
                        help="Timeout connection to graphite (in seconds)" )
     parser.add_option( "-d", "--debug", dest="debug", action='store_true',
                        help="Enable debug output to STDERR" )
+    parser.add_option( "--log-metric", dest="process_log",
+                       help="Custom metric path for PROCESS_LOG events" )
+    parser.add_option( "--state-metric", dest="process_state",
+                       help="Custom metric path for PROCESS_STATE events" )
     return parser
 
 def main():

@@ -26,6 +26,14 @@ class Sulphite(object):
         self.stdin              = sys.stdin
         self.stdout             = sys.stdout
 
+        # Allow customised metric path
+        self.process_log        = kwargs.get(
+            'process_log',
+            '%(process_name)s_%(group_name)s.%(event_name)s')
+        self.process_state      = kwargs.get(
+            'process_state',
+            '%(process_name)s_%(group_name)s.%(from_state)s.%(event_name)s')
+
         #sys.stderr.write( PP.pformat( self.__dict__ ) )
         #sys.stderr.flush()
 
@@ -57,22 +65,23 @@ class Sulphite(object):
                 process_name    = event_data.get( 'processname', None )
                 group_name      = event_data.get( 'groupname',   None )
 
-                # We only want to log grouped processes
-                if group_name is None:
-                    self._debug( "Ignoring unGROUPed event: '%s'" % event_name )
-                    continue
-
                 ### stdout/stderr capturing
                 if re.match( 'PROCESS_LOG', event_name ):
-                    event = "%s.%s.%s" % ( group_name, process_name, event_name.lower() )
+                    event = self.metric % {
+                        'group_name': group_name,
+                        'process_name': process_name,
+                        'event_name': event_name.lower(),
+                    }
                     self._send_to_graphite( event )
 
                 ### state change
                 elif re.match( 'PROCESS_STATE', event_name ):
-                    event = "%s.%s.%s" % \
-                        ( group_name, process_name,
-                          event_data.get('from_state', 'unknown').lower(), \
-                          event_name.lower() )
+                    event = self.metric % {
+                        'group_name': group_name,
+                        'process_name': process_name,
+                        'event_name': event_name.lower(),
+                        'from_state': event_data.get('from_state', 'unknown').lower(),
+                    }
                     self._send_to_graphite( event )
 
                 ### ignore IPC for now
