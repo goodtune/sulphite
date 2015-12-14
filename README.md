@@ -71,6 +71,10 @@ Options:
   -t GRAPHITE_TIMEOUT, --graphite-timeout=GRAPHITE_TIMEOUT
                         Timeout connection to graphite (in seconds)
   -d, --debug           Enable debug output to STDERR
+  --log-metric=PROCESS_LOG
+                        Custom metric path for PROCESS_LOG events
+  --state-metric=PROCESS_STATE
+                        Custom metric path for PROCESS_STATE events
 ```
 
 When configuring Sulphite, you may want to supply the --debug option to
@@ -118,6 +122,22 @@ This also shows that a Supervisor restart is 4 distinct events:
 * stopped -> starting
 * starting -> started
 
+If you would like to alter the metric path, you can use the `--state-metric` option.
+
+```
+sulphite --graphite-server=graphite.example.com \
+         --state-metric "{group_name}.{process_name}.{from_state}.{event_name}"
+```
+
+If you were to restart the `proj:mysql` managed by Supervisor, this is what
+would be sent to graphite:
+
+```
+proj.mysql.running.process_state_stopping 1 1355269824
+proj.mysql.stopping.process_state_stopped 1 1355269824
+proj.mysql.stopped.process_state_starting 1 1355269824
+proj.mysql.starting.process_state_running 1 1355269825
+```
 
 [supervisor]: https://github.com/Supervisor/supervisor
 [supervisor_events]: http://supervisord.org/events.html
