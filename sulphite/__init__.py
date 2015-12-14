@@ -57,37 +57,21 @@ class Sulphite(object):
                 process_name    = event_data.get( 'processname', None )
                 group_name      = event_data.get( 'groupname',   None )
 
-                #self._debug( PP.pformat( [ 'proc/group', process_name, group_name ] ) )
-
-                ### if you didn't specify a 'processname' explicitly, it'll
-                ### be the same as groupname. otherwise, they differ and
-                ### both should be in the key. So, check for that and decide.
-                if process_name != group_name:
-                    process_name += "_" + group_name
-
-                ### in the case you used a . in your name, we'll convert that to a _
-                ### here because graphite renders those as seperators.
-                ### Also remove any spaces as those are not supported in keys either.
-                ### not sure if there are any other things that should be filtered out
-                ### the docs are not conclusive and couldn't find the code section
-                ### either. I'm pretty sure the key is used as the FS name for the
-                ### whisper DB, so probably filesystem reserved characters are bad,
-                ### however, that'd hold true for supervisor as well and I don't think
-                ### we'd get here with such keys.
-                process_name = process_name.replace( '.', '_' )
-                process_name = process_name.replace( ' ', '_' )
-
-                #self._debug( PP.pformat( [ process_name, event_data ] ) )
+                # We only want to log grouped processes
+                if group_name is None:
+                    self._debug( "Ignoring unGROUPed event: '%s'" % event_name )
+                    continue
 
                 ### stdout/stderr capturing
                 if re.match( 'PROCESS_LOG', event_name ):
-                    event = "%s.%s" % ( process_name, event_name.lower() )
+                    event = "%s.%s.%s" % ( group_name, process_name, event_name.lower() )
                     self._send_to_graphite( event )
 
                 ### state change
                 elif re.match( 'PROCESS_STATE', event_name ):
                     event = "%s.%s.%s" % \
-                        ( process_name, event_data.get('from_state', 'unknown').lower(), \
+                        ( group_name, process_name,
+                          event_data.get('from_state', 'unknown').lower(), \
                           event_name.lower() )
                     self._send_to_graphite( event )
 
